@@ -8,6 +8,7 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 const { BlazeClient } = require("mixin-node-sdk");
 const config = require("./config");
 const whitelist = require("./whitelist");
+const words = require("./words");
 const client = new BlazeClient(
   {
     pin: config.pin,
@@ -25,110 +26,6 @@ const configuration = new Configuration({
   apiKey: config.openai_key,
 });
 const openai = new OpenAIApi(configuration);
-
-//Data
-const words = {
-  function: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  object: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  class: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  method: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  property: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  array: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  string: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  number: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  boolean: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  null: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  undefin: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  promise: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  callbac: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  event: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  module: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  variabl: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  constru: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  prototy: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  iterato: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-  decorat: {
-    numOfStudies: 0,
-    lastStudyTime: Date.now(),
-    nextStudyTime: Date.now(),
-  },
-};
 
 //WS
 client.loopBlaze({
@@ -401,19 +298,6 @@ function checkWord(text) {
   }
 }
 
-function updateWordsList(text) {
-  text = text.toLowerCase();
-  if (checkWord(text)) {
-    words[text].numOfStudies += 1;
-    words[text].lastStudyTime = Date.now();
-    words[text].nextStudyTime = getNextStudyTime(
-      words[text].numOfStudies,
-      words[text].lastStudyTime
-    );
-  }
-  console.log(words[text]);
-}
-
 async function getAudio(url, filename) {
   // download the ogg file from the given URL
   const response = await axios({
@@ -454,4 +338,38 @@ async function cleanFile(filename) {
     if (err) throw err;
     console.log("文件已删除");
   });
+}
+
+// function updateWordsList(text) {
+//   text = text.toLowerCase();
+//   if (checkWord(text)) {
+//     words[text].numOfStudies += 1;
+//     words[text].lastStudyTime = Date.now();
+//     words[text].nextStudyTime = getNextStudyTime(
+//       words[text].numOfStudies,
+//       words[text].lastStudyTime
+//     );
+//   }
+//   console.log(words[text]);
+// }
+
+function updateWordsList(text) {
+  text = text.toLowerCase();
+  if (checkWord(text)) {
+    words[text].numOfStudies += 1;
+    words[text].lastStudyTime = Date.now();
+    words[text].nextStudyTime = getNextStudyTime(
+      words[text].numOfStudies,
+      words[text].lastStudyTime
+    );
+    const data = `module.exports = ${JSON.stringify(words)};`;
+    fs.writeFile("./words.js", data, (err) => {
+      if (err) {
+        console.error(err);
+      } else {
+        console.log("words.js已更新");
+      }
+    });
+  }
+  // console.log(words[text]);
 }
